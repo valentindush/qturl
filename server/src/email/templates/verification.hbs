@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Verify your email address</title>
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      line-height: 1.6;
+      margin: 0;
+      padding: 20px;
+      color: #333;
+    }
+    .container {
+      max-width: 600px;
+      margin: 0 auto;
+      background-color: #f9f9f9;
+      padding: 20px;
+      border-radius: 5px;
+      border: 1px solid #ddd;
+    }
+    .header {
+      text-align: center;
+      padding-bottom: 10px;
+      border-bottom: 1px solid #ddd;
+      margin-bottom: 20px;
+    }
+    .button {
+      display: inline-block;
+      padding: 10px 20px;
+      margin: 20px 0;
+      background-color: #4a90e2;
+      color: white;
+      text-decoration: none;
+      border-radius: 5px;
+      text-align: center;
+    }
+    .footer {
+      margin-top: 30px;
+      text-align: center;
+      font-size: 0.8em;
+      color: #888;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="header">
+      <h2>{{appName}}</h2>
+    </div>
+    <p>Hello,</p>
+    <p>Thank you for signing up! Please verify your email address by clicking the button below:</p>
+    
+    <div style="text-align: center;">
+      <a href="{{verificationUrl}}" class="button">Verify Email</a>
+    </div>
+    
+    <p>If the button above doesn't work, copy and paste this link into your browser:</p>
+    <p>{{verificationUrl}}</p>
+    
+    <p>This link will expire in 24 hours.</p>
+    
+    <p>If you didn't sign up for an account, you can safely ignore this email.</p>
+    
+    <div class="footer">
+      <p>&copy; {{appName}} - Contact us at {{supportEmail}}</p>
+    </div>
+  </div>
+</body>
+</html>

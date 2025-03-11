@@ -6,3 +6,69 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+enum Role {
+  USER
+  ADMIN
+}
+
+enum Provider {
+  LOCAL
+  GOOGLE
+  GITHUB
+}
+
+model User {
+  id                 String    @id @default(cuid())
+  email              String    @unique
+  username           String?   @unique
+  password           String?
+  role               Role      @default(USER)
+  isEmailVerified    Boolean   @default(false)
+  verificationToken  String?
+  verificationExpiry DateTime?
+  provider           Provider?
+  providerId         String?
+
+  refreshToken       String?
+  refreshTokenExpiry DateTime?
+
+  urls Url[]
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([email])
+  @@index([providerId])
+}
+
+model Url {
+  id        String @id @default(cuid())
+  shortCode String @unique
+  longUrl   String
+  clicks    Int    @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  userId String
+  user   User   @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  clickEvents ClickEvent[]
+
+  @@index([shortCode])
+  @@index([userId])
+}
+
+model ClickEvent {
+  id        String   @id @default(cuid())
+  urlId     String
+  url       Url      @relation(fields: [urlId], references: [id], onDelete: Cascade)
+  timestamp DateTime @default(now())
+  ipAddress String?
+  userAgent String?
+  referer   String?
+
+  @@index([urlId])
+  @@index([timestamp])
+}
