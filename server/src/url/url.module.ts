@@ -4,6 +4,7 @@ import { UrlController } from './url.controller';
 
 @Module({
   providers: [UrlService],
-  controllers: [UrlController]
+  controllers: [UrlController],
+  exports: [UrlService],
 })
 export class UrlModule {}

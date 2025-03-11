@@ -9,6 +9,7 @@ import { EmailModule } from './email/email.module';
 import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
 import { UrlModule } from './url/url.module';
+import { AnalyticsModule } from './analytics/analytics.module';
 
 @Module({
   imports: [
@@ -38,6 +39,7 @@ import { UrlModule } from './url/url.module';
     EmailModule,
     AuthModule,
     UrlModule,
+    AnalyticsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
