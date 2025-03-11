@@ -8,6 +8,7 @@ import { ConfigModule } from '@nestjs/config';
 import { EmailModule } from './email/email.module';
 import { AuthModule } from './auth/auth.module';
 import { AppService } from './app.service';
+import { UrlModule } from './url/url.module';
 
 @Module({
   imports: [
@@ -36,6 +37,7 @@ import { AppService } from './app.service';
     PrismaModule,
     EmailModule,
     AuthModule,
+    UrlModule,
   ],
   controllers: [AppController],
   providers: [AppService],
