@@ -9,9 +9,20 @@ import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
 import { Alert, AlertDescription } from "@/components/ui/alert"
-import { Loader2, LinkIcon, Copy, ExternalLink } from "lucide-react"
+import { Loader2, LinkIcon, Copy, ExternalLink, LineChart, Trash2 } from "lucide-react"
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table"
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogTrigger } from "@/components/ui/dialog"
+import { 
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+  AlertDialogTrigger,
+} from "@/components/ui/alert-dialog"
 import { UrlAnalytics } from "./url-analytics"
 import { toast } from "sonner"
 
@@ -22,9 +33,11 @@ const urlSchema = z.object({
 type UrlFormValues = z.infer<typeof urlSchema>
 
 export default function DashboardPage() {
-    const { urls, loading, error, fetchUrls, shortenUrl } = useUrl()
+    const { urls, loading, error, fetchUrls, shortenUrl, deleteUrl } = useUrl()
     const [isSubmitting, setIsSubmitting] = useState(false)
     const [selectedUrl, setSelectedUrl] = useState<string | null>(null)
+    const [urlToDelete, setUrlToDelete] = useState<string | null>(null)
+    const [isDeleting, setIsDeleting] = useState(false)
 
     const {
         register,
@@ -53,13 +66,26 @@ export default function DashboardPage() {
     }
 
     const copyToClipboard = (shortCode: string) => {
-        const shortUrl = `http://localhost:3001/${shortCode}`
+        const shortUrl = `${process.env.NEXT_PUBLIC_API_URL}/${shortCode}`
         navigator.clipboard.writeText(shortUrl)
         toast("URL copied to clipboard", { description: "The shortened URL has been copied to your clipboard.", })
     }
 
+    const handleDeleteUrl = async (id: string) => {
+        setIsDeleting(true)
+        try {
+            await deleteUrl(id)
+            toast("URL deleted successfully", { description: "The shortened URL has been permanently deleted.", })
+        } catch (err) {
+            toast("Failed to delete URL", { description: "There was an error deleting your URL. Please try again.", })
+        } finally {
+            setIsDeleting(false)
+            setUrlToDelete(null)
+        }
+    }
+
     return (
-        <div className=" py-8">
+        <div className="py-8">
             <div className="grid gap-8">
                 <Card>
                     <CardHeader>
@@ -163,16 +189,54 @@ export default function DashboardPage() {
                                                                     onClick={() => setSelectedUrl(url.shortCode)}
                                                                     title="View Analytics"
                                                                 >
-                                                                    <LinkIcon className="h-4 w-4" />
+                                                                    <LineChart className="h-4 w-4" />
                                                                 </Button>
                                                             </DialogTrigger>
-                                                            <DialogContent className="max-w-3xl">
+                                                            <DialogContent className="min-w-5xl">
                                                                 <DialogHeader>
-                                                                    <DialogTitle>URL Analytics</DialogTitle>
+                                                                    <DialogTitle>URL Analytics for {url.shortCode}</DialogTitle>
                                                                 </DialogHeader>
                                                                 {selectedUrl && <UrlAnalytics shortCode={selectedUrl} />}
                                                             </DialogContent>
                                                         </Dialog>
+                                                        <AlertDialog>
+                                                            <AlertDialogTrigger asChild>
+                                                                <Button
+                                                                    variant="ghost"
+                                                                    size="icon"
+                                                                    onClick={() => setUrlToDelete(url.id)}
+                                                                    title="Delete URL"
+                                                                    className="text-red-500 hover:text-red-600 hover:bg-red-50"
+                                                                >
+                                                                    <Trash2 className="h-4 w-4" />
+                                                                </Button>
+                                                            </AlertDialogTrigger>
+                                                            <AlertDialogContent>
+                                                                <AlertDialogHeader>
+                                                                    <AlertDialogTitle>Delete URL</AlertDialogTitle>
+                                                                    <AlertDialogDescription>
+                                                                        Are you sure you want to delete this shortened URL?
+                                                                        This action cannot be undone and all analytics data will be lost.
+                                                                    </AlertDialogDescription>
+                                                                </AlertDialogHeader>
+                                                                <AlertDialogFooter>
+                                                                    <AlertDialogCancel>Cancel</AlertDialogCancel>
+                                                                    <AlertDialogAction
+                                                                        onClick={() => handleDeleteUrl(url.id)}
+                                                                        className="bg-red-500 hover:bg-red-600"
+                                                                        disabled={isDeleting}
+                                                                    >
+                                                                        {isDeleting ? (
+                                                                            <>
+                                                                                <Loader2 className="mr-2 h-4 w-4 animate-spin" /> Deleting...
+                                                                            </>
+                                                                        ) : (
+                                                                            "Delete"
+                                                                        )}
+                                                                    </AlertDialogAction>
+                                                                </AlertDialogFooter>
+                                                            </AlertDialogContent>
+                                                        </AlertDialog>
                                                     </div>
                                                 </TableCell>
                                             </TableRow>

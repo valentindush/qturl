@@ -3,19 +3,22 @@
 import { useEffect, useState } from "react"
 import { useUrl } from "@/contexts/url-context"
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
-import { Loader2 } from "lucide-react"
+import { Loader2, LinkIcon } from "lucide-react"
 import { Alert, AlertDescription } from "@/components/ui/alert"
 import {
     ChartContainer,
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart"
+import { BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip, ResponsiveContainer } from "recharts"
+import axios from "@/lib/axios"
 
 export default function AnalyticsPage() {
     const { getSummaryAnalytics } = useUrl()
     const [analytics, setAnalytics] = useState<any>(null)
     const [loading, setLoading] = useState(true)
     const [error, setError] = useState<string | null>(null)
+    const [urlData, setUrlData] = useState<any[]>([])
 
     useEffect(() => {
         const fetchAnalytics = async () => {
@@ -24,8 +27,13 @@ export default function AnalyticsPage() {
             try {
                 const data = await getSummaryAnalytics()
                 setAnalytics(data)
+                
+                // Fetch URL data from the API
+                const response = await axios.get('/analytics/all')
+                setUrlData(response.data)
             } catch (err) {
                 setError("Failed to load analytics data")
+                console.error(err)
             } finally {
                 setLoading(false)
             }
@@ -52,16 +60,32 @@ export default function AnalyticsPage() {
         )
     }
 
+    // Process data for charts
+    const topUrlsData = urlData
+        .sort((a, b) => b.clicks - a.clicks)
+        .slice(0, 5)
+        .map(url => ({
+            name: url.shortCode,
+            clicks: url.clicks,
+            longUrl: url.longUrl
+        }))
 
-    const topUrlsData = analytics?.topUrls
-        ? analytics.topUrls
-            .map((url: any) => ({
-                shortCode: url.shortCode,
-                clicks: url.clicks,
-            }))
-            .sort((a: any, b: any) => b.clicks - a.clicks)
-            .slice(0, 5)
-        : []
+    // Prepare daily clicks data
+    // Group by date and count clicks
+    const dailyClicksMap = new Map()
+    
+    urlData.forEach(url => {
+        const date = new Date(url.createdAt).toLocaleDateString()
+        if (!dailyClicksMap.has(date)) {
+            dailyClicksMap.set(date, 0)
+        }
+        dailyClicksMap.set(date, dailyClicksMap.get(date) + url.clicks)
+    })
+
+    const dailyClicksData = Array.from(dailyClicksMap.entries()).map(([date, clicks]) => ({
+        date,
+        clicks
+    })).sort((a, b) => new Date(a.date).getTime() - new Date(b.date).getTime())
 
     return (
         <div className="container py-8">
@@ -75,7 +99,7 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-center">
-                            <div className="text-5xl font-bold">{analytics?.totalUrls || 0}</div>
+                            <div className="text-5xl font-bold">{urlData.length || 0}</div>
                         </div>
                     </CardContent>
                 </Card>
@@ -87,7 +111,9 @@ export default function AnalyticsPage() {
                     </CardHeader>
                     <CardContent>
                         <div className="text-center">
-                            <div className="text-5xl font-bold">{analytics?.totalClicks || 0}</div>
+                            <div className="text-5xl font-bold">
+                                {urlData.reduce((sum, url) => sum + url.clicks, 0) || 0}
+                            </div>
                         </div>
                     </CardContent>
                 </Card>
@@ -100,7 +126,9 @@ export default function AnalyticsPage() {
                     <CardContent>
                         <div className="text-center">
                             <div className="text-5xl font-bold">
-                                {analytics?.totalUrls ? Math.round((analytics.totalClicks / analytics.totalUrls) * 10) / 10 : 0}
+                                {urlData.length 
+                                    ? Math.round((urlData.reduce((sum, url) => sum + url.clicks, 0) / urlData.length) * 10) / 10 
+                                    : 0}
                             </div>
                         </div>
                     </CardContent>
@@ -114,7 +142,33 @@ export default function AnalyticsPage() {
                         <CardDescription>Click distribution over time</CardDescription>
                     </CardHeader>
                     <CardContent>
-
+                        {dailyClicksData.length > 0 ? (
+                            <div className="h-[300px]">
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={dailyClicksData}
+                                        margin={{
+                                            top: 5,
+                                            right: 30,
+                                            left: 20,
+                                            bottom: 5,
+                                        }}
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis dataKey="date" />
+                                        <YAxis />
+                                        <Tooltip />
+                                        <Bar dataKey="clicks" fill="#8884d8" />
+                                    </BarChart>
+                                </ResponsiveContainer>
+                            </div>
+                        ) : (
+                            <div className="flex justify-center py-8 text-center">
+                                <div>
+                                    <p className="text-muted-foreground">No click data available yet</p>
+                                </div>
+                            </div>
+                        )}
                     </CardContent>
                 </Card>
 
@@ -126,7 +180,40 @@ export default function AnalyticsPage() {
                     <CardContent>
                         {topUrlsData.length > 0 ? (
                             <div className="h-[300px]">
-                               
+                                <ResponsiveContainer width="100%" height="100%">
+                                    <BarChart
+                                        data={topUrlsData}
+                                        margin={{
+                                            top: 5,
+                                            right: 30,
+                                            left: 20,
+                                            bottom: 5,
+                                        }}
+                                        layout="vertical"
+                                    >
+                                        <CartesianGrid strokeDasharray="3 3" />
+                                        <XAxis type="number" />
+                                        <YAxis type="category" dataKey="name" width={80} />
+                                        <Tooltip 
+                                            content={({ active, payload }) => {
+                                                if (active && payload && payload.length) {
+                                                    const data = payload[0].payload;
+                                                    return (
+                                                        <div className="bg-white p-2 border rounded shadow">
+                                                            <p><strong>Code:</strong> {data.name}</p>
+                                                            <p><strong>Clicks:</strong> {data.clicks}</p>
+                                                            <p className="text-xs truncate max-w-xs">
+                                                                <strong>URL:</strong> {data.longUrl}
+                                                            </p>
+                                                        </div>
+                                                    );
+                                                }
+                                                return null;
+                                            }}
+                                        />
+                                        <Bar dataKey="clicks" fill="#82ca9d" />
+                                    </BarChart>
+                                </ResponsiveContainer>
                             </div>
                         ) : (
                             <div className="flex justify-center py-8 text-center">

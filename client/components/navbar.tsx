@@ -24,7 +24,7 @@ export function Navbar() {
             <div className="container flex h-14 items-center">
                 <div className="mr-4 flex">
                     <Link href="/dashboard" className="mr-6 flex items-center space-x-2">
-                        <span className="hidden font-bold sm:inline-block">URL Shortener</span>
+                        <span className="hidden font-bold sm:inline-block">QT URLs</span>
                     </Link>
                     <nav className="hidden gap-6 md:flex">
                         <Link

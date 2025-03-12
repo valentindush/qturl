@@ -53,7 +53,7 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const register = async (email: string, username: string, password: string) => {
         try {
             await axios.post("/auth/register", { email, username, password })
-            router.push("/auth/verify-email")
+            router.push("/auth/verify")
         } catch (error) {
             throw error
         }

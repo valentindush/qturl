@@ -33,7 +33,8 @@ interface UrlContextType {
     urls: UrlData[]
     loading: boolean
     error: string | null
-    fetchUrls: () => Promise<void>
+    fetchUrls: () => Promise<void>,
+    deleteUrl: (id: string) => Promise<void>
     shortenUrl: (longUrl: string) => Promise<UrlData>
     getUrlAnalytics: (shortCode: string) => Promise<AnalyticsData>
     getSummaryAnalytics: () => Promise<any>
@@ -108,6 +109,21 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
         }
     }, [])
 
+    const deleteUrl = useCallback(async (id: string): Promise<void> => {
+        setLoading(true)
+        setError(null)
+        try {
+            await axios.delete(`/urls/${id}`)
+            setUrls((prevUrls) => prevUrls.filter((url) => url.id !== id))
+        } catch (err) {
+            setError("Failed to delete URL")
+            console.error(err)
+            throw err
+        } finally {
+            setLoading(false)
+        }
+    }, [])
+
     // Memoize the context value
     const contextValue = {
         urls,
@@ -115,6 +131,7 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
         error,
         fetchUrls,
         shortenUrl,
+        deleteUrl,
         getUrlAnalytics,
         getSummaryAnalytics,
     }

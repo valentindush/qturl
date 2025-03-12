@@ -23,7 +23,7 @@ import { AnalyticsModule } from './analytics/analytics.module';
       useFactory: async (config: ConfigService) => ({
         transport: {
           host: config.get('MAIL_HOST'),
-          secure: config.get('MAIL_SECURE', false),
+          secure: false,
           port: config.get('MAIL_PORT', 587),
           auth: {
             user: config.get('MAIL_USER'),
