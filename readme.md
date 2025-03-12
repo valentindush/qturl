@@ -36,23 +36,7 @@ Before running the application, you need to set up environment variables:
 
 ## Running the Application
 
-### Option 1: Using Docker Compose (Recommended)
-
-From the root directory:
-
-```bash
-docker compose up
-```
-
-This will start both the client and server services. The client will be available at http://localhost:3000 and the server at http://localhost:3001.
-
-To stop the services:
-
-```bash
-docker compose down
-```
-
-### Option 2: Running Manually
+### Option 1: Running Manually
 
 #### Server
 
@@ -107,3 +91,19 @@ pnpm install
 pnpm dev
 ```
 
+
+### Option 2: Using Docker Compose (Recommended)
+
+From the root directory:
+
+```bash
+docker compose up
+```
+
+This will start both the client and server services. The client will be available at http://localhost:3000 and the server at http://localhost:3001.
+
+To stop the services:
+
+```bash
+docker compose down
+```
