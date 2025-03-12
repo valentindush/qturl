@@ -59,7 +59,7 @@ export default function DashboardPage() {
     }
 
     return (
-        <div className="container py-8">
+        <div className=" py-8">
             <div className="grid gap-8">
                 <Card>
                     <CardHeader>
@@ -133,7 +133,7 @@ export default function DashboardPage() {
                                             <TableRow key={url.id}>
                                                 <TableCell className="font-medium">
                                                     <a
-                                                        href={`http://localhost:3001/${url.shortCode}`}
+                                                        href={`${process.env.NEXT_PUBLIC_API_URL}/api/v1/${url.shortCode}`}
                                                         target="_blank"
                                                         rel="noopener noreferrer"
                                                         className="flex items-center text-primary hover:underline"

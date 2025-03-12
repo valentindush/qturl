@@ -1,7 +1,7 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useState } from "react"
+import { createContext, useContext, useState, useCallback, useEffect } from "react"
 import axios from "@/lib/axios"
 
 export interface UrlData {
@@ -46,7 +46,8 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(false)
     const [error, setError] = useState<string | null>(null)
 
-    const fetchUrls = async () => {
+    // Use useCallback to memoize these functions
+    const fetchUrls = useCallback(async () => {
         setLoading(true)
         setError(null)
         try {
@@ -58,9 +59,9 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
 
-    const shortenUrl = async (longUrl: string): Promise<UrlData> => {
+    const shortenUrl = useCallback(async (longUrl: string): Promise<UrlData> => {
         setLoading(true)
         setError(null)
         try {
@@ -75,9 +76,9 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
 
-    const getUrlAnalytics = async (shortCode: string): Promise<AnalyticsData> => {
+    const getUrlAnalytics = useCallback(async (shortCode: string): Promise<AnalyticsData> => {
         setLoading(true)
         setError(null)
         try {
@@ -90,9 +91,9 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
         } finally {
             setLoading(false)
         }
-    }
+    }, [])
 
-    const getSummaryAnalytics = async () => {
+    const getSummaryAnalytics = useCallback(async () => {
         setLoading(true)
         setError(null)
         try {
@@ -105,20 +106,21 @@ export const UrlProvider = ({ children }: { children: React.ReactNode }) => {
         } finally {
             setLoading(false)
         }
+    }, [])
+
+    // Memoize the context value
+    const contextValue = {
+        urls,
+        loading,
+        error,
+        fetchUrls,
+        shortenUrl,
+        getUrlAnalytics,
+        getSummaryAnalytics,
     }
 
     return (
-        <UrlContext.Provider
-            value={{
-                urls,
-                loading,
-                error,
-                fetchUrls,
-                shortenUrl,
-                getUrlAnalytics,
-                getSummaryAnalytics,
-            }}
-        >
+        <UrlContext.Provider value={contextValue}>
             {children}
         </UrlContext.Provider>
     )
@@ -131,4 +133,3 @@ export const useUrl = () => {
     }
     return context
 }
-

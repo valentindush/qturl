@@ -9,7 +9,7 @@ import { type User, getUser, logout } from "@/lib/auth"
 interface AuthContextType {
     user: User | null
     loading: boolean
-    login: (username: string, password: string) => Promise<void>
+    login: (email: string, password: string) => Promise<void>
     register: (email: string, username: string, password: string) => Promise<void>
     logout: () => void
     setTokensFromOAuth: (accessToken: string, refreshToken: string) => void
@@ -33,9 +33,9 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         checkAuth()
     }, [])
 
-    const login = async (username: string, password: string) => {
+    const login = async (email: string, password: string) => {
         try {
-            const response = await axios.post("/auth/login", { username, password })
+            const response = await axios.post("/auth/login", { email, password })
             const { accessToken, refreshToken } = response.data
 
             localStorage.setItem("accessToken", accessToken)

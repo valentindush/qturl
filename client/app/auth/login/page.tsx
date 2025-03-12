@@ -14,7 +14,7 @@ import { Alert, AlertDescription } from "@/components/ui/alert"
 import { Loader2, Github, Mail } from "lucide-react"
 
 const loginSchema = z.object({
-    username: z.string().min(3, "Username must be at least 3 characters"),
+    email: z.string().email("Please enter a valid email address"),
     password: z.string().min(6, "Password must be at least 6 characters"),
 })
 
@@ -37,7 +37,7 @@ export default function LoginPage() {
         setIsLoading(true)
         setError(null)
         try {
-            await login(data.username, data.password)
+            await login(data.email, data.password)
         } catch (err: any) {
             setError(err.response?.data?.message || "Failed to login. Please try again.")
         } finally {
@@ -60,9 +60,15 @@ export default function LoginPage() {
                     )}
                     <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
                         <div className="space-y-2">
-                            <Label htmlFor="username">Username</Label>
-                            <Input id="username" placeholder="johndoe" {...register("username")} disabled={isLoading} />
-                            {errors.username && <p className="text-sm text-red-500">{errors.username.message}</p>}
+                            <Label htmlFor="email">Email</Label>
+                            <Input
+                                id="email"
+                                type="email"
+                                placeholder="john.doe@example.com"
+                                {...register("email")}
+                                disabled={isLoading}
+                            />
+                            {errors.email && <p className="text-sm text-red-500">{errors.email.message}</p>}
                         </div>
                         <div className="space-y-2">
                             <div className="flex items-center justify-between">

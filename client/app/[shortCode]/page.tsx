@@ -11,7 +11,7 @@ export default async function ShortUrlRedirect({ params }: Props) {
     const { shortCode } = params
 
     try {
-        const response = await axios.get(`http://localhost:3001/api/v1/${shortCode}`)
+        const response = await axios.get(`${process.env.NEXT_PUBLIC_API_URL}/api/v1/${shortCode}`)
 
         // Redirect to the original URL
         redirect(response.data.longUrl)
