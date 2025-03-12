@@ -36,7 +36,7 @@ services:
     depends_on:
       - server
     env_file:
-      - ./client/.env
+      - ./client/.env.local
     networks:
       - server_network
 

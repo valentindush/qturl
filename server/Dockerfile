@@ -4,7 +4,7 @@ WORKDIR /app
 RUN apt-get update && apt-get install -y netcat-openbsd
 
 COPY package*.json ./
-RUN npm install
+RUN npm install --force or --legacy-peer-deps
 
 COPY . .
 COPY entrypoint.sh /entrypoint.sh
