@@ -1,10 +1,10 @@
 "use client"
 
 import type React from "react"
-import { createContext, useContext, useEffect, useState } from "react"
+import { createContext, useContext, useEffect, useState, useCallback } from "react"
 import { useRouter } from "next/navigation"
 import axios from "@/lib/axios"
-import { type User, getUser, logout } from "@/lib/auth"
+import { type User, getUser, logout as authLogout } from "@/lib/auth"
 
 interface AuthContextType {
     user: User | null
@@ -22,18 +22,8 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
     const [loading, setLoading] = useState(true)
     const router = useRouter()
 
-    useEffect(() => {
-        // Check if user is logged in on initial load
-        const checkAuth = () => {
-            const currentUser = getUser()
-            setUser(currentUser)
-            setLoading(false)
-        }
-
-        checkAuth()
-    }, [])
-
-    const login = async (email: string, password: string) => {
+    // Use useCallback to memoize these functions so they don't change on every render
+    const login = useCallback(async (email: string, password: string) => {
         try {
             const response = await axios.post("/auth/login", { email, password })
             const { accessToken, refreshToken } = response.data
@@ -48,18 +38,24 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         } catch (error) {
             throw error
         }
-    }
+    }, [router]);
 
-    const register = async (email: string, username: string, password: string) => {
+    const register = useCallback(async (email: string, username: string, password: string) => {
         try {
             await axios.post("/auth/register", { email, username, password })
             router.push("/auth/verify")
         } catch (error) {
             throw error
         }
-    }
+    }, [router]);
 
-    const setTokensFromOAuth = (accessToken: string, refreshToken: string) => {
+    const handleLogout = useCallback(() => {
+        authLogout()
+        setUser(null)
+        router.push("/login")
+    }, [router]);
+
+    const setTokensFromOAuth = useCallback((accessToken: string, refreshToken: string) => {
         localStorage.setItem("accessToken", accessToken)
         localStorage.setItem("refreshToken", refreshToken)
 
@@ -67,19 +63,36 @@ export const AuthProvider = ({ children }: { children: React.ReactNode }) => {
         setUser(currentUser)
 
         router.push("/dashboard")
-    }
+    }, [router]);
+
+    // Separate initial auth check into its own effect with no dependencies
+    useEffect(() => {
+        const checkAuth = () => {
+            try {
+                const currentUser = getUser()
+                setUser(currentUser)
+            } catch (error) {
+                console.error("Error getting user:", error)
+            } finally {
+                setLoading(false)
+            }
+        }
+
+        checkAuth()
+    }, []);
+
+    // Create a stable context value that won't change on every render
+    const contextValue = {
+        user,
+        loading,
+        login,
+        register,
+        logout: handleLogout,
+        setTokensFromOAuth,
+    };
 
     return (
-        <AuthContext.Provider
-            value={{
-                user,
-                loading,
-                login,
-                register,
-                logout,
-                setTokensFromOAuth,
-            }}
-        >
+        <AuthContext.Provider value={contextValue}>
             {children}
         </AuthContext.Provider>
     )
@@ -92,4 +105,3 @@ export const useAuth = () => {
     }
     return context
 }
-
