@@ -11,11 +11,10 @@ echo "PostgreSQL is up!"
 
 # Run Prisma migrations
 echo "Running Prisma Migrations..."
-npx prisma migrate deploy
+npx prisma db push
 
 # Run the seed script
-echo "Seeding the database..."
-npm run seed
+
 
 # Start the application
 echo "Starting the application..."
