@@ -1,0 +1,8 @@
+services:
+  qt-url:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    image: qt-url-fronted
+    ports:
+      - "3000:3000"

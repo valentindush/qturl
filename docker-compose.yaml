@@ -1,0 +1,48 @@
+services:
+  postgres:
+    image: postgres:13
+    environment:
+      POSTGRES_DB: urlshortener
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 123456
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5431:5432"
+    networks:
+      - server_network
+
+  server:
+    build:
+      context: ./server
+      dockerfile: Dockerfile
+    depends_on:
+      - postgres
+    env_file:
+      - ./server/.env
+    ports:
+      - "3001:3001"
+    networks:
+      - server_network
+    entrypoint: ["/app/entrypoint.sh"]
+
+
+  client:
+    build:
+      context: ./client
+      dockerfile: Dockerfile
+    ports:
+      - "3000:3000"
+    depends_on:
+      - server
+    env_file:
+      - ./client/.env
+    networks:
+      - server_network
+
+volumes:
+  postgres_data:
+
+networks:
+  server_network:
+    driver: bridge
