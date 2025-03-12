@@ -141,3 +141,19 @@
     --chart-5: 340 75% 55%;
   }
 }
+
+.group:hover .group-hover\:block {
+  display: block;
+  animation: fadeIn 0.2s ease-out;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
