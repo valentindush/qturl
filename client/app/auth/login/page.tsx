@@ -101,7 +101,7 @@ export default function LoginPage() {
                     <div className="grid grid-cols-2 gap-4">
                         <Button
                             variant="outline"
-                            onClick={() => (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/google"`)}
+                            onClick={() => (window.location.href = `${process.env.NEXT_PUBLIC_API_URL}/api/v1/auth/google`)}
                         >
                             <Mail className="mr-2 h-4 w-4" /> Google
                         </Button>
